@@ -11,8 +11,39 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
+from dataclasses import dataclass, field
 from importlib import resources
 from typing import Dict, List, Optional, Tuple
+
+
+@dataclass
+class ClassificationResult:
+    """Result of :meth:`ReactionClassifier.classify`.
+
+    ``reaction_code``/``reaction_name`` are the **deterministically confirmed**
+    classification: they are populated only when a template in the predicted
+    class's subtree actually fired on the reaction. If they are ``None``, the
+    deterministic layer could not confirm a class — fall back to
+    ``neural_code``/``neural_name``, the (unconfirmed) neural-gate prediction,
+    which is always available.
+
+    Attributes
+    ----------
+    reaction_code : confirmed class code, or ``None`` if unconfirmed.
+    reaction_name : confirmed class name, or ``None`` if unconfirmed.
+    neural_code   : neural-gate predicted class (always present unless the
+                    reaction could not be parsed/fingerprinted).
+    neural_name   : name of ``neural_code``.
+    confidence    : neural-gate softmax confidence in [0, 1].
+    tier_path     : ancestor codes from tier 2 down to ``reaction_code``.
+    """
+
+    reaction_code: Optional[str]
+    reaction_name: Optional[str]
+    neural_code: Optional[str]
+    neural_name: Optional[str]
+    confidence: float = 0.0
+    tier_path: List[str] = field(default_factory=list)
 
 import torch
 import torch.nn.functional as F
@@ -20,7 +51,7 @@ import torch.nn.functional as F
 from ._match import match_first
 from .features import FingerprintConfig, reaction_features
 from .model import MLPClassifier
-from .taxonomy import name_for, tier_path
+from .taxonomy import full_class_name, tier_path
 
 
 def _data(name: str):
@@ -106,22 +137,25 @@ class ReactionClassifier:
         return self.id_to_label.get(int(idx[0].item())), float(p[0].item())
 
     # -- full classify ------------------------------------------------------
-    def classify(self, rxn: str) -> Dict:
+    def classify(self, rxn: str) -> ClassificationResult:
         """Classify a reaction SMILES (``reactants>>products`` or
-        ``reactants>reagents>products``). Returns a dict with the matched class
-        ``code``/``name``/``tier_path``, whether a template ``matched`` (else the
-        classifier abstains), and the underlying ``gate_code``/``confidence``."""
+        ``reactants>reagents>products``).
+
+        Returns a :class:`ClassificationResult`. ``reaction_code``/
+        ``reaction_name`` are set when a template deterministically confirms the
+        class; otherwise they are ``None`` and you can fall back to
+        ``neural_code``/``neural_name`` (the unconfirmed neural-gate prediction)."""
         gate_code, conf = self.gate(rxn)
         code = None
         if gate_code:
             records = self._by_prefix.get(_prefix(gate_code, self.subset_tier), [])
             if records:
                 code = match_first(rxn, records)
-        return {
-            "code": code,
-            "name": name_for(code),
-            "tier_path": tier_path(code),
-            "matched": code is not None,
-            "gate_code": gate_code,
-            "confidence": round(conf, 4),
-        }
+        return ClassificationResult(
+            reaction_code=code,
+            reaction_name=full_class_name(code),
+            neural_code=gate_code,
+            neural_name=full_class_name(gate_code),
+            confidence=round(conf, 4),
+            tier_path=tier_path(code),
+        )

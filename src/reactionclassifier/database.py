@@ -12,8 +12,8 @@ from pathlib import Path
 from typing import Optional
 
 # Filled in at release time (Zenodo record).
-ZENODO_URL: Optional[str] = None          # e.g. "https://zenodo.org/records/<id>/files/reaction_db_public.parquet"
-EXPECTED_SHA256: Optional[str] = None     # hex digest for integrity check
+ZENODO_URL: Optional[str] = None          # TODO: set after Zenodo upload, e.g. "https://zenodo.org/records/<id>/files/reaction_db_public.parquet"
+EXPECTED_SHA256: Optional[str] = "af8482038abf24adc91e33dfd009392c61b9629dca4c2f5aff96d53295390549"
 FILENAME = "reaction_db_public.parquet"
 
 

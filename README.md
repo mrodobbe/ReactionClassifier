@@ -19,13 +19,25 @@ pip install reactionclassifier          # requires rdkit, torch, numpy
 from reactionclassifier import ReactionClassifier
 
 clf = ReactionClassifier()              # loads the bundled gate + templates + taxonomy
-out = clf.classify("CC(=O)O.NCc1ccccc1>>CC(=O)NCc1ccccc1")
-# {'code': '2.1.2.x', 'name': '...', 'tier_path': [...],
-#  'matched': True, 'gate_code': '...', 'confidence': 0.99}
+r = clf.classify("CC(=O)O.NCc1ccccc1>>CC(=O)NCc1ccccc1")
+r.reaction_code     # '2.1.2.1'   (deterministically confirmed)
+r.reaction_name     # 'Amidation using Carboxylic Acids | Primary Amine + Carboxylic Acid to Secondary Amide'
+r.tier_path         # ['2.1', '2.1.2', '2.1.2.1']
+r.confidence        # 1.0
 ```
 
-`matched=False` means the deterministic layer abstained (no template fired) —
-the classifier does not emit a label it cannot verify.
+`classify()` returns a `ClassificationResult`:
+
+| field | meaning |
+|-------|---------|
+| `reaction_code` | the **deterministically confirmed** class code — a template fired and reproduced the product. `None` if unconfirmed. |
+| `reaction_name` | pipe-separated level 3/4/5 names of `reaction_code` (tiers 1-2 omitted). |
+| `neural_code` / `neural_name` | the **neural-gate** prediction (always available); use as a fallback when `reaction_code` is `None`. Same name format. |
+| `confidence` | neural-gate softmax confidence |
+| `tier_path` | ancestor codes of `reaction_code` |
+
+So: if `reaction_code` is populated you have a verified label; otherwise
+`neural_code`/`neural_name` give the model's best (unverified) guess.
 
 ### Taxonomy and granularity examples
 

@@ -18,9 +18,26 @@ def load_taxonomy() -> Dict[str, str]:
 
 
 def name_for(code: Optional[str]) -> Optional[str]:
+    """Name of a single class code."""
     if code is None:
         return None
     return load_taxonomy().get(str(code))
+
+
+def full_class_name(code: Optional[str]) -> Optional[str]:
+    """Pipe-separated names of the level-3, level-4 and level-5 components of
+    ``code`` (tiers 1-2 omitted)."""
+    if code is None:
+        return None
+    parts = str(code).split(".")
+    tax = load_taxonomy()
+    names = [
+        tax[p]
+        for n in range(3, min(5, len(parts)) + 1)
+        for p in (".".join(parts[:n]),)
+        if p in tax
+    ]
+    return " | ".join(names) if names else tax.get(str(code))
 
 
 def tier_path(code: Optional[str]) -> List[str]:
