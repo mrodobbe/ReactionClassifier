@@ -1,11 +1,10 @@
-# reactionclassifier
+# ReactionClassifier
 
-Hybrid-strict hierarchical reaction classification. Given a reaction SMILES, it
+Hierarchical reaction classification. Given a reaction SMILES, it
 predicts a class in an LLM-derived reaction taxonomy and **confirms it
-deterministically**: a Morgan difference–product (MDP) fingerprint MLP gate
+symbolically**: a Morgan difference–product (MDP) fingerprint MLP gate
 proposes a class, the exact retrosynthetic templates in that class's tier-3
-subtree are applied to the reaction, and a label is returned only if a template
-actually reproduces the recorded product (otherwise the classifier abstains).
+subtree are applied to the reaction, and a label is returned only if a template reproduces the recorded product
 
 ## Install
 
