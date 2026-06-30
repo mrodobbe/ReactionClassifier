@@ -69,11 +69,11 @@ path = download_database()     # downloads + caches the parquet, returns its pat
 The released database **excludes NameRXN-derived columns** (`NAME`, `CLASS`);
 NameRXN is proprietary and its labels are not redistributed.
 
-## Provenance & scope
+## Detail
 
 - The MDP fingerprint is a Morgan difference (reactant⊕product bit-unions)
   concatenated with the product fingerprint (RDKit, radius 2, 2048 bits each;
-  4096-dim). It is DRFP-inspired but does **not** use the `drfp` package.
+  4096-dim).
 - The **full** generalised-SMIRKS library is not released; only the small subset
   embedded in the granularity examples is included.
 
