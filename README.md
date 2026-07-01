@@ -22,7 +22,7 @@ r = clf.classify("CC(=O)O.NCc1ccccc1>>CC(=O)NCc1ccccc1")
 r.reaction_code     # '2.1.2.1'   (deterministically confirmed)
 r.reaction_name     # 'Amidation using Carboxylic Acids | Primary Amine + Carboxylic Acid to Secondary Amide'
 r.tier_path         # ['2.1', '2.1.2', '2.1.2.1']
-r.confidence        # 1.0
+r.confidence        # Top-1 probability of the neural layer
 ```
 
 `classify()` returns a `ClassificationResult`:
