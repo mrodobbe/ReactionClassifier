@@ -1,11 +1,10 @@
-# reactionclassifier
+# ReactionClassifier
 
-Hybrid-strict hierarchical reaction classification. Given a reaction SMILES, it
+Hierarchical reaction classification. Given a reaction SMILES, it
 predicts a class in an LLM-derived reaction taxonomy and **confirms it
-deterministically**: a Morgan difference–product (MDP) fingerprint MLP gate
+symbolically**: a Morgan difference–product (MDP) fingerprint MLP gate
 proposes a class, the exact retrosynthetic templates in that class's tier-3
-subtree are applied to the reaction, and a label is returned only if a template
-actually reproduces the recorded product (otherwise the classifier abstains).
+subtree are applied to the reaction, and a label is returned only if a template reproduces the recorded product
 
 ## Install
 
@@ -73,11 +72,11 @@ path = download_database()     # downloads + caches the parquet, returns its pat
 The released database **excludes NameRXN-derived columns** (`NAME`, `CLASS`);
 NameRXN is proprietary and its labels are not redistributed.
 
-## Provenance & scope
+## Detail
 
 - The MDP fingerprint is a Morgan difference (reactant⊕product bit-unions)
   concatenated with the product fingerprint (RDKit, radius 2, 2048 bits each;
-  4096-dim). It is DRFP-inspired but does **not** use the `drfp` package.
+  4096-dim).
 - The **full** generalised-SMIRKS library is not released; only the small subset
   embedded in the granularity examples is included.
 
