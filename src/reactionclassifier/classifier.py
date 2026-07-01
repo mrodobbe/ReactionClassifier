@@ -99,10 +99,19 @@ class ReactionClassifier:
             self.model.load_state_dict(torch.load(fh, map_location=self.device))
         self.model.eval()
 
+        # Aggregator "CONFLICT:" markers are ambiguous, non-taxonomy codes; drop
+        # them so they can never be emitted as a label.
+        conflict_ids = [i for i, lab in self.id_to_label.items() if lab.startswith("CONFLICT")]
+        self._conflict_idx = (
+            torch.tensor(conflict_ids, dtype=torch.long, device=self.device) if conflict_ids else None
+        )
+
         # exact-template library, indexed by tier-N prefix for fast subsetting
         c2t: Dict[str, List[str]] = json.loads(_data("class_to_templates.json").read_text())
         self._by_prefix: Dict[str, List[Tuple[str, str, int]]] = defaultdict(list)
         for code, templates in c2t.items():
+            if str(code).startswith("CONFLICT"):
+                continue
             pref = _prefix(code, self.subset_tier)
             for t in templates:
                 nreact = len(t.split(">>")[0].split("."))
@@ -132,7 +141,10 @@ class ReactionClassifier:
             return None, 0.0
         x = torch.from_numpy(feat).float().unsqueeze(0).to(self.device)
         with torch.no_grad():
-            probs = F.softmax(self.model(x), dim=-1)
+            logits = self.model(x)
+            if self._conflict_idx is not None:
+                logits[:, self._conflict_idx] = float("-inf")   # never predict CONFLICT classes
+            probs = F.softmax(logits, dim=-1)
         p, idx = probs.max(dim=1)
         return self.id_to_label.get(int(idx[0].item())), float(p[0].item())
 

@@ -74,3 +74,12 @@ def test_unconfirmed_falls_back_to_neural(clf):
 def test_invalid_input_does_not_crash(clf):
     r = clf.classify("not a reaction")
     assert r.reaction_code is None
+
+
+def test_no_conflict_codes(clf):
+    # aggregator "CONFLICT:" markers must never be emitted as labels
+    codes = {code for recs in clf._by_prefix.values() for (code, _, _) in recs}
+    assert not any(str(c).startswith("CONFLICT") for c in codes)
+    r = clf.classify("CC(=O)O.NCc1ccccc1>>CC(=O)NCc1ccccc1")
+    assert not str(r.reaction_code or "").startswith("CONFLICT")
+    assert not str(r.neural_code or "").startswith("CONFLICT")
