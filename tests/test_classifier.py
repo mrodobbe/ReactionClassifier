@@ -76,6 +76,27 @@ def test_invalid_input_does_not_crash(clf):
     assert r.reaction_code is None
 
 
+def test_loaders_are_locale_independent():
+    """Regression: bundled data is UTF-8 and must load under a non-UTF-8 default
+    locale (this broke on Windows cp1252). Runs a subprocess under an ASCII
+    locale (LC_ALL=C, PYTHONUTF8=0), which reproduces the failure on any OS if a
+    reader omits encoding='utf-8'."""
+    import os
+    import subprocess
+    import sys
+
+    code = (
+        "import reactionclassifier as rc;"
+        "rc.load_taxonomy(); rc.load_granularity();"
+        "c = rc.ReactionClassifier();"
+        "assert c.classify('CC(=O)O.NCc1ccccc1>>CC(=O)NCc1ccccc1').reaction_code"
+    )
+    env = dict(os.environ, LC_ALL="C", LANG="C", PYTHONUTF8="0")
+    env.pop("PYTHONIOENCODING", None)
+    r = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True)
+    assert r.returncode == 0, f"loaders failed under ASCII locale:\n{r.stderr}"
+
+
 def test_no_conflict_codes(clf):
     # aggregator "CONFLICT:" markers must never be emitted as labels
     codes = {code for recs in clf._by_prefix.values() for (code, _, _) in recs}
