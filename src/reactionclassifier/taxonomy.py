@@ -14,7 +14,7 @@ def _data(name: str):
 @functools.lru_cache(maxsize=1)
 def load_taxonomy() -> Dict[str, str]:
     """Full hierarchy: flat mapping of class code (e.g. ``"1.3.6.2"``) -> name."""
-    return json.loads(_data("taxonomy.json").read_text())
+    return json.loads(_data("taxonomy.json").read_text(encoding="utf-8"))
 
 
 def name_for(code: Optional[str]) -> Optional[str]:
@@ -55,5 +55,5 @@ def load_granularity() -> Dict[str, dict]:
     carry the small illustrative subset of generalised SMIRKS that is released."""
     out = {}
     for nm in ("granularity_examples.json", "granularity_examples_medchem.json"):
-        out[nm.replace(".json", "")] = json.loads(_data(nm).read_text())
+        out[nm.replace(".json", "")] = json.loads(_data(nm).read_text(encoding="utf-8"))
     return out

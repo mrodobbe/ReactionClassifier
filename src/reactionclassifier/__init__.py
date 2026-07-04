@@ -17,4 +17,4 @@ __all__ = [
     "tier_path",
     "load_granularity",
 ]
-__version__ = "0.1.0"
+__version__ = "0.1.1"

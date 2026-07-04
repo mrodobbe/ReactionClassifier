@@ -75,10 +75,10 @@ class ReactionClassifier:
         self.device = torch.device(device)
         self.subset_tier = int(subset_tier)
 
-        meta = json.loads(_data("gate/meta.json").read_text())
+        meta = json.loads(_data("gate/meta.json").read_text(encoding="utf-8"))
         self.fp_meta = meta["fp"]
         m = meta["model"]
-        label_map = json.loads(_data("gate/label_map.json").read_text())
+        label_map = json.loads(_data("gate/label_map.json").read_text(encoding="utf-8"))
         self.id_to_label = {int(k): str(v) for k, v in label_map.items()}
 
         nbits = int(self.fp_meta.get("nbits", 2048))
@@ -107,7 +107,7 @@ class ReactionClassifier:
         )
 
         # exact-template library, indexed by tier-N prefix for fast subsetting
-        c2t: Dict[str, List[str]] = json.loads(_data("class_to_templates.json").read_text())
+        c2t: Dict[str, List[str]] = json.loads(_data("class_to_templates.json").read_text(encoding="utf-8"))
         self._by_prefix: Dict[str, List[Tuple[str, str, int]]] = defaultdict(list)
         for code, templates in c2t.items():
             if str(code).startswith("CONFLICT"):
